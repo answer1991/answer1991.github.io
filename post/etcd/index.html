@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="theme" content="hugo-academic">
+  <meta name="generator" content="Hugo 0.22-DEV" />
+  <meta name="author" content="陈俊">
+  <meta name="description" content="Software Engineer">
+
+  
+  
+  
+    
+  
+  
+    
+    
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/styles/github.min.css">
+    
+  
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/font-awesome.min.css">
+  <link rel="stylesheet" href="/css/academicons.min.css">
+  <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,700%7CMerriweather%7CRoboto+Mono">
+  <link rel="stylesheet" href="/css/hugo-academic.css">
+  
+
+  <link rel="alternate" href="https://answer1991.github.io/index.xml" type="application/rss+xml" title="answer1991">
+  <link rel="feed" href="https://answer1991.github.io/index.xml" type="application/rss+xml" title="answer1991">
+
+  <link rel="icon" type="image/png" href="/img/icon2.png">
+  <link rel="apple-touch-icon" type="image/png" href="/img/apple-touch-icon.png">
+
+  <link rel="canonical" href="https://answer1991.github.io/post/etcd/">
+
+  
+
+  <title>分布式集群基础组件-etcd | answer1991</title>
+
+</head>
+<body id="top" data-spy="scroll" data-target="#navbar-main" data-offset="71">
+
+<nav class="navbar navbar-default navbar-fixed-top" id="navbar-main">
+  <div class="container">
+
+    
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
+              data-target=".navbar-collapse" aria-expanded="false">
+        <span class="sr-only">切换导航</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/">answer1991</a>
+    </div>
+
+    
+    <div class="collapse navbar-collapse">
+
+      
+      <ul class="nav navbar-nav navbar-right">
+        
+
+        
+
+        <li class="nav-item">
+          <a href="/#about">
+            
+            <span>主页</span>
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        <li class="nav-item">
+          <a href="/#posts">
+            
+            <span>文章</span>
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        <li class="nav-item">
+          <a href="/#projects">
+            
+            <span>项目</span>
+          </a>
+        </li>
+
+        
+        
+
+        
+
+        <li class="nav-item">
+          <a href="/#contact">
+            
+            <span>联系方式</span>
+          </a>
+        </li>
+
+        
+        
+
+        
+      </ul>
+
+    </div>
+  </div>
+</nav>
+
+
+<article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
+
+
+  <div class="article-container">
+    <h1 itemprop="name">分布式集群基础组件-etcd</h1>
+    
+
+<div class="article-metadata">
+
+  <span class="article-date">
+    <time datetime="2017-06-13 19:21:00 &#43;0000 UTC" itemprop="datePublished">
+      2017-06-13
+    </time>
+  </span>
+
+  
+
+  
+  
+  
+  <span class="article-tags">
+    <i class="fa fa-tags"></i>
+    
+    <a href="/tags/etcd">etcd</a
+    >, 
+    
+    <a href="/tags/discovery">discovery</a
+    >, 
+    
+    <a href="/tags/docker">docker</a
+    >
+    
+  </span>
+  
+  
+
+  
+  
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    <li>
+      <a class="facebook"
+         href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fanswer1991.github.io%2fpost%2fetcd%2f"
+         target="_blank">
+        <i class="fa fa-facebook"></i>
+      </a>
+    </li>
+    <li>
+      <a class="twitter"
+         href="https://twitter.com/intent/tweet?text=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-etcd&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fetcd%2f"
+         target="_blank">
+        <i class="fa fa-twitter"></i>
+      </a>
+    </li>
+    <li>
+      <a class="linkedin"
+         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fetcd%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-etcd"
+         target="_blank">
+        <i class="fa fa-linkedin"></i>
+      </a>
+    </li>
+    <li>
+      <a class="weibo"
+         href="http://service.weibo.com/share/share.php?url=https%3a%2f%2fanswer1991.github.io%2fpost%2fetcd%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-etcd"
+         target="_blank">
+        <i class="fa fa-weibo"></i>
+      </a>
+    </li>
+    <li>
+      <a class="email"
+         href="mailto:?subject=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-etcd&amp;body=https%3a%2f%2fanswer1991.github.io%2fpost%2fetcd%2f">
+        <i class="fa fa-envelope"></i>
+      </a>
+    </li>
+  </ul>
+</div>
+
+
+  
+
+</div>
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+<h3 id="单节点测试服务">单节点测试服务</h3>
+
+<pre><code class="language-bash">$ docker run -dit --name etcd-single --net host \
+    --restart=always \
+    -e ETCD_NAME=infra1 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://$(hostname -i):2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra1:/infra1.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+</code></pre>
+
+<p>注意： 这里使用了<code>host</code>网络模式，这种基础组件服务我也建议使用<code>host</code>模式。
+同时，服务会占用<code>2379</code>, <code>2380</code>端口。</p>
+
+<h3 id="三节点生产集群">三节点生产集群</h3>
+
+<p>这里介绍没有使用<code>docker-compose</code>方式起服务。</p>
+
+<p>假设我们要将服务器在 <code>10.10.10.1</code>, <code>10.10.10.2</code>, <code>10.10.10.3</code> 三台机器上。</p>
+
+<p>那么<code>ETCD_INITIAL_CLUSTER</code>的值为<code>infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380</code></p>
+
+<h5 id="10-10-10-1节点">10.10.10.1节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit --name etcd-infra1 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra1 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra1:/infra1.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+</code></pre>
+
+<h5 id="10-10-10-2节点">10.10.10.2节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit --name etcd-infra2 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra2 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra2:/infra2.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+</code></pre>
+
+<h5 id="10-10-10-3节点">10.10.10.3节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit --name etcd-infra3 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra3 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra3:/infra3.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+</code></pre>
+
+    </div>
+  </div>
+
+</article>
+
+<div class="container">
+  <nav>
+  <ul class="pager">
+    
+
+    
+    <li class="next"><a href="https://answer1991.github.io/post/zk/">分布式集群基础组件-Zookeeper <span
+      aria-hidden="true">&rarr;</span></a></li>
+    
+  </ul>
+</nav>
+
+</div>
+
+<div class="article-container">
+  
+
+</div>
+
+<footer class="site-footer">
+  <div class="container">
+    <p class="powered-by">
+
+      &copy; 2017 answer1991 &middot; 
+
+      Powered by the <a href="https://github.com/gcushen/hugo-academic" target="_blank">Academic
+      theme</a> for <a href="http://gohugo.io" target="_blank">Hugo</a>.
+
+      <span class="pull-right" aria-hidden="true">
+        <a href="#" id="back_to_top">
+          <span class="button_icon">
+            <i class="fa fa-chevron-up fa-2x"></i>
+          </span>
+        </a>
+      </span>
+
+    </p>
+  </div>
+</footer>
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/gsap/1.18.4/TweenMax.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/gsap/latest/plugins/ScrollToPlugin.min.js"></script>
+    <script src="/js/jquery-1.12.3.min.js"></script>
+    <script src="/js/bootstrap.min.js"></script>
+    <script src="/js/isotope.pkgd.min.js"></script>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery.imagesloaded/4.1.1/imagesloaded.pkgd.min.js"></script>
+    <script src="/js/hugo-academic.js"></script>
+    
+
+    
+
+    
+    
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/languages/go.min.js"></script>
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/languages/bash.min.js"></script>
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/languages/java.min.js"></script>
+      
+      <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/languages/javascript.min.js"></script>
+      
+
+      
+
+      <script>hljs.initHighlightingOnLoad();</script>
+    
+
+    
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+    </script>
+    <script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
+    
+
+  </body>
+</html>
+

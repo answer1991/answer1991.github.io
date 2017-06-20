@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="zh-cn">
 <head>
 
   <meta charset="utf-8">
@@ -50,7 +50,7 @@
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
               data-target=".navbar-collapse" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
+        <span class="sr-only">切换导航</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -199,57 +199,34 @@
 
 <h1 id="个人简介">个人简介</h1>
 
-<p>陈俊是一个软件工程师。</p>
+<p>陈俊是一个全栈软件工程师。</p>
+
+<p>目前就职于蚂蚁金服，负责IaaS运维管理平台架构、设计、开发工作。
+该运维平台托管了所有蚂蚁集团和阿里集团的统一资源调度集群，管理了近10万物理机。平台可以管理集群的整个生命周期，从一键建站、升级、扩容缩容到最后的回收。</p>
+
+<p>博客正在迁移&hellip;</p>
 
 
     <div class="row">
 
       
       <div class="col-sm-5">
-        <h3>Interests</h3>
+        
+        <h3>专注领域</h3>
         <ul class="ul-interests">
           
-          <li>Artificial Intelligence</li>
+          <li>统一资源调度集群</li>
           
-          <li>Computational Linguistics</li>
+          <li>IaaS运维平台</li>
           
-          <li>Information Retrieval</li>
+          <li>分布式系统</li>
+          
+          <li>容器化运维</li>
           
         </ul>
       </div>
       
 
-      
-      <div class="col-sm-7">
-        <h3>Education</h3>
-        <ul class="ul-edu fa-ul">
-          
-          <li>
-            <i class="fa-li fa fa-graduation-cap"></i>
-            <div class="description">
-              <p class="course">PhD in Artificial Intelligence, 2012</p>
-              <p class="institution">Stanford University</p>
-            </div>
-          </li>
-          
-          <li>
-            <i class="fa-li fa fa-graduation-cap"></i>
-            <div class="description">
-              <p class="course">MEng in Artificial Intelligence, 2009</p>
-              <p class="institution">Massachusetts Institute of Technology</p>
-            </div>
-          </li>
-          
-          <li>
-            <i class="fa-li fa fa-graduation-cap"></i>
-            <div class="description">
-              <p class="course">BSc in Artificial Intelligence, 2008</p>
-              <p class="institution">Massachusetts Institute of Technology</p>
-            </div>
-          </li>
-          
-        </ul>
-      </div>
       
 
     </div>
@@ -271,7 +248,7 @@
 <div class="row">
   <div class="col-xs-12 col-md-4 section-heading">
 
-    <h1>Recent Posts</h1>
+    <h1>最近博文</h1>
     
     
 
@@ -290,7 +267,7 @@
   
   
   <h3 class="article-title" itemprop="name">
-    <a href="https://answer1991.github.io/post/flannel/" itemprop="url">Use Flannel Network</a>
+    <a href="https://answer1991.github.io/post/flannel/" itemprop="url">使用flannel创建跨节点的docker容器网络</a>
   </h3>
   
 
@@ -329,12 +306,128 @@
 
   <div class="article-style" itemprop="articleBody">
     
-    <p>Create a beautifully simple personal or academic website in under 10 minutes.</p>
+    <p>在多节点的docker集群环境下，docker自带的网络不能满足跨节点的容器互通问题。本文介绍使用<code>flannel</code>来搭建跨节点的虚拟docker容器网络。</p>
     
   </div>
   <p class="read-more">
     <a href="https://answer1991.github.io/post/flannel/" class="btn btn-primary btn-outline">
-      CONTINUE READING
+      继续阅读
+    </a>
+  </p>
+</div>
+
+      
+        
+        
+
+
+<div class="article-list-item" itemscope itemprop="blogPost">
+  
+  
+  <h3 class="article-title" itemprop="name">
+    <a href="https://answer1991.github.io/post/zk/" itemprop="url">分布式集群基础组件-Zookeeper</a>
+  </h3>
+  
+
+<div class="article-metadata">
+
+  <span class="article-date">
+    <time datetime="2017-06-13 19:21:00 &#43;0000 UTC" itemprop="datePublished">
+      2017-06-13
+    </time>
+  </span>
+
+  
+
+  
+  
+  
+  <span class="article-tags">
+    <i class="fa fa-tags"></i>
+    
+    <a href="/tags/zk">zk</a
+    >, 
+    
+    <a href="/tags/discovery">discovery</a
+    >, 
+    
+    <a href="/tags/docker">docker</a
+    >
+    
+  </span>
+  
+  
+
+  
+
+</div>
+
+  <div class="article-style" itemprop="articleBody">
+    
+    <p>Zookeeper是Apache提供的分布式配置中心服务。本文介绍如何用Docker容器方式启动Zookeeper。</p>
+    
+  </div>
+  <p class="read-more">
+    <a href="https://answer1991.github.io/post/zk/" class="btn btn-primary btn-outline">
+      继续阅读
+    </a>
+  </p>
+</div>
+
+      
+        
+        
+
+
+<div class="article-list-item" itemscope itemprop="blogPost">
+  
+  
+  <h3 class="article-title" itemprop="name">
+    <a href="https://answer1991.github.io/post/etcd/" itemprop="url">分布式集群基础组件-etcd</a>
+  </h3>
+  
+
+<div class="article-metadata">
+
+  <span class="article-date">
+    <time datetime="2017-06-13 19:21:00 &#43;0000 UTC" itemprop="datePublished">
+      2017-06-13
+    </time>
+  </span>
+
+  
+
+  
+  
+  
+  <span class="article-tags">
+    <i class="fa fa-tags"></i>
+    
+    <a href="/tags/etcd">etcd</a
+    >, 
+    
+    <a href="/tags/discovery">discovery</a
+    >, 
+    
+    <a href="/tags/docker">docker</a
+    >
+    
+  </span>
+  
+  
+
+  
+
+</div>
+
+  <div class="article-style" itemprop="articleBody">
+    
+    <p>etcd使用广泛的的分布式配置中心服务，最常见的被用于k8s。本文介绍如何用Docker容器方式启动etcd。</p>
+    
+  </div>
+  <p class="read-more">
+    <a href="https://answer1991.github.io/post/etcd/" class="btn btn-primary btn-outline">
+      继续阅读
     </a>
   </p>
 </div>
@@ -358,7 +451,7 @@
 
 <div class="row">
   <div class="col-xs-12 col-md-4 section-heading">
-    <h1>Projects</h1>
+    <h1>项目</h1>
     
   </div>
   <div class="col-xs-12 col-md-8">
@@ -371,9 +464,9 @@
           
             <a href="#" data-filter="*" class="btn btn-primary btn-large active">All</a>
           
-            <a href="#" data-filter=".deep-learning" class="btn btn-primary btn-large">Deep Learning</a>
+            <a href="#" data-filter=".deep-learning" class="btn btn-primary btn-large">运维管理平台</a>
           
-            <a href="#" data-filter=".demo" class="btn btn-primary btn-large">Other</a>
+            <a href="#" data-filter=".demo" class="btn btn-primary btn-large">分布式计算系统</a>
           
           </div>
         </div>
@@ -384,49 +477,6 @@
 
     <div id="container-projects" class="row isotope">
 
-      
-      
-      
-      
-      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-6 project-item isotope-item deep-learning">
-        <div class="card">
-          
-          <a href="https://answer1991.github.io/project/deep-learning/" title="" class="card-image hover-overlay"
-             >
-            <img src="/img/bubbles.jpg" alt="" class="img-responsive">
-          </a>
-          
-          <div class="card-text">
-            <h4><a href="https://answer1991.github.io/project/deep-learning/" >Deep Learning</a></h4>
-            <div class="card-desription">
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-      
-      
-      
-      
-      
-      
-      
-      <div class="col-xs-12 col-sm-6 col-md-4 col-lg-6 project-item isotope-item demo">
-        <div class="card">
-          
-          <a href="http://example.org" title="" class="card-image hover-overlay"
-             target="_blank">
-            <img src="/img/boards.jpg" alt="" class="img-responsive">
-          </a>
-          
-          <div class="card-text">
-            <h4><a href="http://example.org" target="_blank">External Project</a></h4>
-            <div class="card-desription">
-              <p>An example of linking directly to an external project website using <code>external_link</code>.</p>
-            </div>
-          </div>
-        </div>
-      </div>
       
 
     </div>
@@ -450,7 +500,7 @@
 
 <div class="row">
   <div class="col-xs-12 col-md-4 section-heading">
-    <h1>Contact</h1>
+    <h1>联系方式</h1>
     
   </div>
   <div class="col-xs-12 col-md-8">
@@ -511,7 +561,7 @@
   <div class="container">
     <p class="powered-by">
 
-      &copy; 2016 answer1991 &middot; 
+      &copy; 2017 answer1991 &middot; 
 
       Powered by the <a href="https://github.com/gcushen/hugo-academic" target="_blank">Academic
       theme</a> for <a href="http://gohugo.io" target="_blank">Hugo</a>.

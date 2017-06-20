@@ -34,11 +34,11 @@
   <link rel="icon" type="image/png" href="/img/icon2.png">
   <link rel="apple-touch-icon" type="image/png" href="/img/apple-touch-icon.png">
 
-  <link rel="canonical" href="https://answer1991.github.io/publication/clothing-search/">
+  <link rel="canonical" href="https://answer1991.github.io/post/zk/">
 
   
 
-  <title>Mobile visual clothing search | answer1991</title>
+  <title>分布式集群基础组件-Zookeeper | answer1991</title>
 
 </head>
 <body id="top" data-spy="scroll" data-target="#navbar-main" data-offset="71">
@@ -120,58 +120,80 @@
   </div>
 </nav>
 
-<div class="pub" itemscope itemtype="http://schema.org/CreativeWork">
+
+<article class="article" itemscope itemtype="http://schema.org/Article">
 
   
-<div class="article-header">
-  <img src="/img/headers/bubbles-wide.jpg" class="article-banner" itemprop="image">
-  <span class="article-header-caption">My caption 😄</span>
-</div>
 
 
+  <div class="article-container">
+    <h1 itemprop="name">分布式集群基础组件-Zookeeper</h1>
+    
 
-  <div class="container pub-title">
-    <h1 itemprop="name">Mobile visual clothing search</h1>
-    <span class="pub-authors" itemprop="author">
-      
-      GA Cushen, MS Nixon
-      
-    </span>
-    <span class="pull-right">
-      
+<div class="article-metadata">
+
+  <span class="article-date">
+    <time datetime="2017-06-13 19:21:00 &#43;0000 UTC" itemprop="datePublished">
+      2017-06-13
+    </time>
+  </span>
+
+  
+
+  
+  
+  
+  <span class="article-tags">
+    <i class="fa fa-tags"></i>
+    
+    <a href="/tags/zk">zk</a
+    >, 
+    
+    <a href="/tags/discovery">discovery</a
+    >, 
+    
+    <a href="/tags/docker">docker</a
+    >
+    
+  </span>
+  
+  
+
+  
+  
 <div class="share-box" aria-hidden="true">
   <ul class="share">
     <li>
       <a class="facebook"
-         href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fanswer1991.github.io%2fpublication%2fclothing-search%2f"
+         href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fanswer1991.github.io%2fpost%2fzk%2f"
          target="_blank">
         <i class="fa fa-facebook"></i>
       </a>
     </li>
     <li>
       <a class="twitter"
-         href="https://twitter.com/intent/tweet?text=Mobile%20visual%20clothing%20search&amp;url=https%3a%2f%2fanswer1991.github.io%2fpublication%2fclothing-search%2f"
+         href="https://twitter.com/intent/tweet?text=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-Zookeeper&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fzk%2f"
          target="_blank">
         <i class="fa fa-twitter"></i>
       </a>
     </li>
     <li>
       <a class="linkedin"
-         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fanswer1991.github.io%2fpublication%2fclothing-search%2f&amp;title=Mobile%20visual%20clothing%20search"
+         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fzk%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-Zookeeper"
          target="_blank">
         <i class="fa fa-linkedin"></i>
       </a>
     </li>
     <li>
       <a class="weibo"
-         href="http://service.weibo.com/share/share.php?url=https%3a%2f%2fanswer1991.github.io%2fpublication%2fclothing-search%2f&amp;title=Mobile%20visual%20clothing%20search"
+         href="http://service.weibo.com/share/share.php?url=https%3a%2f%2fanswer1991.github.io%2fpost%2fzk%2f&amp;title=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-Zookeeper"
          target="_blank">
         <i class="fa fa-weibo"></i>
       </a>
     </li>
     <li>
       <a class="email"
-         href="mailto:?subject=Mobile%20visual%20clothing%20search&amp;body=https%3a%2f%2fanswer1991.github.io%2fpublication%2fclothing-search%2f">
+         href="mailto:?subject=%e5%88%86%e5%b8%83%e5%bc%8f%e9%9b%86%e7%be%a4%e5%9f%ba%e7%a1%80%e7%bb%84%e4%bb%b6-Zookeeper&amp;body=https%3a%2f%2fanswer1991.github.io%2fpost%2fzk%2f">
         <i class="fa fa-envelope"></i>
       </a>
     </li>
@@ -179,136 +201,96 @@
 </div>
 
 
-    </span>
-  </div>
-
-</div>
-<div class="article-container">
-
   
 
-  <h3>摘要</h3>
-  <p class="pub-abstract" itemprop="text">We present a mobile visual clothing search system whereby a smart phone user can either choose a social networking photo or take a new photo of a person wearing clothing of interest and search for similar clothing in a retail database. From the query image, the person is detected, clothing is segmented, and clothing features are extracted and quantized. The information is sent from the phone client to a server, where the feature vector of the query image is used to retrieve similar clothing products from online databases. The phone&#39;s GPS location is used to re-rank results by retail store location. State of the art work focuses primarily on the recognition of a diverse range of clothing offline and pays little attention to practical applications. Evaluated on a challenging dataset, the system is relatively fast and achieves promising results.</p>
-
-  
-  <div class="row">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-10">
-      <div class="row">
-        <div class="col-xs-12 col-sm-3 pub-row-heading">类型</div>
-        <div class="col-xs-12 col-sm-9">
-          
-          <a href="/publication/#1">
-            Conference proceedings
-          </a>
-          
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-1"></div>
-  </div>
-  <div class="visible-xs space-below"></div>
-  
-
-  <div class="row">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-10">
-      <div class="row">
-        <div class="col-xs-12 col-sm-3 pub-row-heading">出版物</div>
-        <div class="col-xs-12 col-sm-9">In <em>International Conference on Multimedia and Expo Workshops (ICMEW)</em>, IEEE.</div>
-      </div>
-    </div>
-    <div class="col-sm-1"></div>
-  </div>
-  <div class="visible-xs space-below"></div>
-
-  <div class="row">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-10">
-      <div class="row">
-        <div class="col-xs-12 col-sm-3 pub-row-heading">日期</div>
-        <div class="col-xs-12 col-sm-9" itemprop="datePublished">
-          July, 2013
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-1"></div>
-  </div>
-  <div class="visible-xs space-below"></div>
-
-  <div class="row" style="padding-top: 10px">
-    <div class="col-sm-1"></div>
-    <div class="col-sm-10">
-      <div class="row">
-        <div class="col-xs-12 col-sm-3 pub-row-heading" style="line-height:34px;">链接</div>
-        <div class="col-xs-12 col-sm-9">
-
-          
-
-
-
-
-<a class="btn btn-primary btn-outline" href="http://eprints.soton.ac.uk/352095/1/Cushen-IMV2013.pdf">
-  PDF
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="https://answer1991.github.io/">
-  演示文稿
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="https://answer1991.github.io/">
-  视频
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="https://answer1991.github.io/">
-  代码
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="https://answer1991.github.io/">
-  数据集
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="https://answer1991.github.io/project/deep-learning/">
-  项目
-</a>
-
-
-<a class="btn btn-primary btn-outline" href="http://www.example.org">
-  Custom Link
-</a>
-
-
-
-        </div>
-      </div>
-    </div>
-    <div class="col-sm-1"></div>
-  </div>
-  <div class="visible-xs space-below"></div>
-
-  <div class="space-below"></div>
-
-  <div class="article-style"><p>More detail can easily be written here using <em>Markdown</em> and $\rm \LaTeX$ math code.</p>
 </div>
 
-</div>
+    <div class="article-style" itemprop="articleBody">
+      
+
+<h3 id="单节点测试服务">单节点测试服务</h3>
+
+<pre><code class="language-bash">$ docker run -dit \
+    --name zk-single \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    zookeeper:3.4.10
+</code></pre>
+
+<p>注意： 这里使用了<code>host</code>网络模式，这种基础组件服务我也建议使用<code>host</code>模式。
+同时，服务会占用<code>2181</code>, <code>2888</code>以及 <code>3888</code>端口。</p>
+
+<h3 id="三节点生产集群">三节点生产集群</h3>
+
+<p>这里介绍没有使用<code>docker-compose</code>方式起服务。</p>
+
+<p>假设我们要将服务器在 <code>10.10.10.1</code>, <code>10.10.10.2</code>, <code>10.10.10.3</code> 三台机器上。</p>
+
+<h5 id="10-10-10-1节点">10.10.10.1节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit \
+    --name zk-1 \
+    --net host \ 
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=1 \
+    -e &quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&quot; \
+    zookeeper:3.4.10
+</code></pre>
+
+<h5 id="10-10-10-2节点">10.10.10.2节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit \
+    --name zk-2 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=2 \
+    -e &quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&quot; \
+    zookeeper:3.4.10
+</code></pre>
+
+<h5 id="10-10-10-3节点">10.10.10.3节点</h5>
+
+<pre><code class="language-bash">$ docker run -dit 
+    --name zk-3 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=3 \
+    -e &quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&quot; \
+    zookeeper:3.4.10
+</code></pre>
+
+    </div>
+  </div>
+
+</article>
 
 <div class="container">
   <nav>
   <ul class="pager">
     
+    <li class="previous"><a href="https://answer1991.github.io/post/etcd/"><span
+      aria-hidden="true">&larr;</span> 分布式集群基础组件-etcd</a></li>
+    
 
     
-    <li class="next"><a href="https://answer1991.github.io/publication/person-re-identification/">A Person Re-Identification System For Mobile Devices <span
+    <li class="next"><a href="https://answer1991.github.io/post/flannel/">使用flannel创建跨节点的docker容器网络 <span
       aria-hidden="true">&rarr;</span></a></li>
     
   </ul>
 </nav>
+
+</div>
+
+<div class="article-container">
+  
 
 </div>
 

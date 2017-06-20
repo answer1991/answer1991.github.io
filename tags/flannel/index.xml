@@ -5,80 +5,121 @@
     <link>https://answer1991.github.io/tags/flannel/</link>
     <description>Recent content in Flannel on answer1991</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <copyright>&amp;copy; 2016 answer1991</copyright>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2017 answer1991</copyright>
     <lastBuildDate>Tue, 13 Jun 2017 19:21:00 +0000</lastBuildDate>
     <atom:link href="/tags/flannel/" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Use Flannel Network</title>
+      <title>使用flannel创建跨节点的docker容器网络</title>
       <link>https://answer1991.github.io/post/flannel/</link>
       <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/post/flannel/</guid>
       <description>
 
-&lt;h3 id=&#34;创建etcd&#34;&gt;创建etcd&lt;/h3&gt;
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
-&lt;pre&gt;&lt;code&gt;$ docker run -dit --name etcd-1 --net host \
-    --restart=always \
-	-e ETCD_NAME=infra1 \
-	-e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
-	-e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
-	-e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
-	-e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
-	-e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
-	-e ETCD_INITIAL_CLUSTER=infra1=http://$(hostname -i):2380 \
-	-e ETCD_INITIAL_CLUSTER_STATE=new \
-	-e ETCD_AUTO_COMPACTION_RETENTION=1 \
-	-e ETCD_SNAPSHOT_COUNT=10000 \
-	-e ETCD_MAX_SNAPSHOTS=5 \
-	-e ETCD_MAX_WALS=5 \
-	-e ETCD_HEARTBEAT_INTERVAL=1000 \
-	-e ETCD_ELECTION_TIMEOUT=10000 \
-	-v $(pwd)/etcd:/infra1.etcd \
-	acs-reg.alipay.com/k8s/etcd-amd64:3.0.10 \
-	etcd --quota-backend-bytes=8589934592
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;在多节点的docker集群环境下，docker自带的网络不能满足跨节点的容器互通问题。当然这个是有前提：容器不以&lt;code&gt;host&lt;/code&gt;网络模式启动。
+如果要实现互通，都以&lt;code&gt;host网络&lt;/code&gt;模式启动会带来其它问题，如端口冲突。&lt;/p&gt;
 
-&lt;h3 id=&#34;create-network&#34;&gt;Create Network&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;k8s&lt;/code&gt;用&lt;code&gt;flannel&lt;/code&gt;来解决上述问题。本文介绍单独使用&lt;code&gt;flannel&lt;/code&gt;来搭建跨节点的虚拟docker容器网络。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ curl -sSL http://localhost:2379/v2/keys/coreos.com/network/config -XPUT \
+&lt;h3 id=&#34;1-创建etcd&#34;&gt;1. 创建etcd&lt;/h3&gt;
+
+&lt;p&gt;参考本站博客内的etcd博文。&lt;/p&gt;
+
+&lt;h3 id=&#34;2-创建flannel-network-config&#34;&gt;2. 创建flannel Network Config&lt;/h3&gt;
+
+&lt;p&gt;只需被创建一次，网段和backend定下里之后不能更改。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ curl -sSL http://localhost:2379/v2/keys/coreos.com/network/config -XPUT \
       -d value=&#39;{ &amp;quot;Network&amp;quot;: &amp;quot;192.168.0.0/16&amp;quot;, &amp;quot;Backend&amp;quot;: {&amp;quot;Type&amp;quot;: &amp;quot;udp&amp;quot;}}&#39;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;create-flannel&#34;&gt;Create flannel&lt;/h3&gt;
+&lt;h3 id=&#34;3-运行flanneld&#34;&gt;3. 运行flanneld&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;$ docker run -dit --name=flanel_1 \
-	--restart=always \
-	--net=host \
-	--privileged \
-	-v /dev/net:/dev/net \
-	-v /run/flannel:/run/flannel \
-	acs-reg.alipay.com/k8s/flannel:v0.6.2-amd64 \
-	/opt/bin/flanneld \
-	--etcd-endpoints=http://127.0.0.1:2379 \
-	--ip-masq=true \
-	--iface=$(ip -o -4 addr list $(ip -o -4 route show to default | awk &#39;{print $5}&#39; | head -1) | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1)
-	
+&lt;p&gt;假设&lt;code&gt;etcd&lt;/code&gt;服务在&lt;code&gt;10.10.10.1&lt;/code&gt;, &lt;code&gt;10.10.10.2&lt;/code&gt;, &lt;code&gt;10.10.10.3&lt;/code&gt;三台机器上，
+那么&lt;code&gt;etcd-endpoints&lt;/code&gt;的值为&lt;code&gt;http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name=flannel \
+    --restart=always \
+    --net=host \
+    --privileged \
+    -v /dev/net:/dev/net \
+    -v /run/flannel:/run/flannel \
+    quay.io/coreos/flannel:v0.7.1-amd64 \
+    /opt/bin/flanneld \
+    --etcd-endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 \
+    --ip-masq=true \
+    --iface=$(ip -o -4 addr list $(ip -o -4 route show to default | awk &#39;{print $5}&#39; | head -1) | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-修改docker-daemon的bip和mtu参数&#34;&gt;4. 修改docker daemon的bip和mtu参数&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;bip&lt;/code&gt;和&lt;code&gt;mtu&lt;/code&gt;获取方式:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat /run/flannel/subnet.env
+ FLANNEL_NETWORK=192.168.0.0/16
+ FLANNEL_SUBNET=192.168.66.1/24
+ FLANNEL_MTU=1472
+ FLANNEL_IPMASQ=true
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;restart-docker&#34;&gt;Restart Docker&lt;/h3&gt;
+&lt;p&gt;其中 &lt;code&gt;bip&lt;/code&gt;为&lt;code&gt;FLANNEL_SUBNET&lt;/code&gt;的值， &lt;code&gt;mtu&lt;/code&gt;的为&lt;code&gt;FLANNEL_MTU&lt;/code&gt;的值。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ DOCKER_CONF=$(sudo systemctl cat docker | head -1 | awk &#39;{print $2}&#39;);source /run/flannel/subnet.env
+&lt;p&gt;将这两个参数加入到docker daemon启动配置中。以&lt;code&gt;systemctl&lt;/code&gt;系统为例，可以执行一下脚本&lt;/p&gt;
 
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt; 
+DOCKER_CONF=$(sudo systemctl cat docker | head -1 | awk &#39;{print $2}&#39;);
+
+source /run/flannel/subnet.env
+
+cp -f $DOCKER_CONF $DOCKER_CONF.backup
 
 if [[ -z $(grep -- &amp;quot;--mtu=&amp;quot; $DOCKER_CONF) ]]; then
     sed -e &amp;quot;s@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF)@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF) --mtu=${FLANNEL_MTU}@g&amp;quot; -i $DOCKER_CONF
-  fi
-  if [[ -z $(grep -- &amp;quot;--bip=&amp;quot; $DOCKER_CONF) ]]; then
+fi
+if [[ -z $(grep -- &amp;quot;--bip=&amp;quot; $DOCKER_CONF) ]]; then
     sed -e &amp;quot;s@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF)@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF) --bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
-  fi
+fi
   
-$  sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--mtu=${FLANNEL_MTU}@g;s@$(grep -o -- &amp;quot;--bip=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
+sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--mtu=${FLANNEL_MTU}@g;s@$(grep -o -- &amp;quot;--bip=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
 
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行后的结果如下（注意&lt;code&gt;--bip&lt;/code&gt;和&lt;code&gt;--mtu&lt;/code&gt;）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat /etc/systemd/system/docker.service |grep ExecStart
+ExecStart=/usr/bin/docker daemon -H fd:// --tlsverify --tlscacert /etc/docker/ca.pem --tlscert=/etc/docker/server.pem --tlskey=/etc/docker/server-key.pem --log-opt max-size=200m  --log-opt max-file=5 -H tcp://0.0.0.0:2376  --insecure-registry=acs-reg.sqa.alipay.net  --insecure-registry=alipay.docker.io  --registry-mirror=https://ant.mirror.aliyuncs.com --cluster-store= --storage-driver=overlay  --bip=192.168.66.1/24 --mtu=1472
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-删除docker0-重启docker-daemon&#34;&gt;5. 删除docker0，重启docker daemon&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ ip link set docker0 down
+$ ip link del docker0
+
+$ systemctl daemon-reload
+$ systemctl restart docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;其它节点安装方式&#34;&gt;其它节点安装方式&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;步骤2&lt;/code&gt; - &lt;code&gt;步骤5&lt;/code&gt;重复到其它节点上面。这样flannel网络建成了。&lt;/p&gt;
+
+&lt;h3 id=&#34;验证方式&#34;&gt;验证方式&lt;/h3&gt;
+
+&lt;p&gt;选两个节点，分别创建容器，不用指定网络类型。如：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit nginx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从一个节点ping另一个节点的容器的IP，可以ping通。&lt;/p&gt;
+
+&lt;p&gt;从一个节点的容器内去ping另一个节点的容器IP，可以ping通。&lt;/p&gt;
+
+&lt;p&gt;这样就实现了跨节点的docker容器虚拟网络。&lt;/p&gt;
 
 &lt;h3 id=&#34;utils&#34;&gt;utils&lt;/h3&gt;
 

@@ -5,86 +5,309 @@
     <link>https://answer1991.github.io/</link>
     <description>Recent content in answer1991 on answer1991</description>
     <generator>Hugo -- gohugo.io</generator>
-    <language>en-us</language>
-    <copyright>&amp;copy; 2016 answer1991</copyright>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2017 answer1991</copyright>
     <lastBuildDate>Wed, 20 Apr 2016 00:00:00 +0000</lastBuildDate>
     <atom:link href="/" rel="self" type="application/rss+xml" />
     
     <item>
-      <title>Use Flannel Network</title>
+      <title>使用flannel创建跨节点的docker容器网络</title>
       <link>https://answer1991.github.io/post/flannel/</link>
       <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/post/flannel/</guid>
       <description>
 
-&lt;h3 id=&#34;创建etcd&#34;&gt;创建etcd&lt;/h3&gt;
+&lt;h2 id=&#34;背景&#34;&gt;背景&lt;/h2&gt;
 
-&lt;pre&gt;&lt;code&gt;$ docker run -dit --name etcd-1 --net host \
-    --restart=always \
-	-e ETCD_NAME=infra1 \
-	-e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
-	-e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
-	-e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
-	-e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
-	-e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
-	-e ETCD_INITIAL_CLUSTER=infra1=http://$(hostname -i):2380 \
-	-e ETCD_INITIAL_CLUSTER_STATE=new \
-	-e ETCD_AUTO_COMPACTION_RETENTION=1 \
-	-e ETCD_SNAPSHOT_COUNT=10000 \
-	-e ETCD_MAX_SNAPSHOTS=5 \
-	-e ETCD_MAX_WALS=5 \
-	-e ETCD_HEARTBEAT_INTERVAL=1000 \
-	-e ETCD_ELECTION_TIMEOUT=10000 \
-	-v $(pwd)/etcd:/infra1.etcd \
-	acs-reg.alipay.com/k8s/etcd-amd64:3.0.10 \
-	etcd --quota-backend-bytes=8589934592
-&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;在多节点的docker集群环境下，docker自带的网络不能满足跨节点的容器互通问题。当然这个是有前提：容器不以&lt;code&gt;host&lt;/code&gt;网络模式启动。
+如果要实现互通，都以&lt;code&gt;host网络&lt;/code&gt;模式启动会带来其它问题，如端口冲突。&lt;/p&gt;
 
-&lt;h3 id=&#34;create-network&#34;&gt;Create Network&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;k8s&lt;/code&gt;用&lt;code&gt;flannel&lt;/code&gt;来解决上述问题。本文介绍单独使用&lt;code&gt;flannel&lt;/code&gt;来搭建跨节点的虚拟docker容器网络。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ curl -sSL http://localhost:2379/v2/keys/coreos.com/network/config -XPUT \
+&lt;h3 id=&#34;1-创建etcd&#34;&gt;1. 创建etcd&lt;/h3&gt;
+
+&lt;p&gt;参考本站博客内的etcd博文。&lt;/p&gt;
+
+&lt;h3 id=&#34;2-创建flannel-network-config&#34;&gt;2. 创建flannel Network Config&lt;/h3&gt;
+
+&lt;p&gt;只需被创建一次，网段和backend定下里之后不能更改。&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ curl -sSL http://localhost:2379/v2/keys/coreos.com/network/config -XPUT \
       -d value=&#39;{ &amp;quot;Network&amp;quot;: &amp;quot;192.168.0.0/16&amp;quot;, &amp;quot;Backend&amp;quot;: {&amp;quot;Type&amp;quot;: &amp;quot;udp&amp;quot;}}&#39;
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;create-flannel&#34;&gt;Create flannel&lt;/h3&gt;
+&lt;h3 id=&#34;3-运行flanneld&#34;&gt;3. 运行flanneld&lt;/h3&gt;
 
-&lt;pre&gt;&lt;code&gt;$ docker run -dit --name=flanel_1 \
-	--restart=always \
-	--net=host \
-	--privileged \
-	-v /dev/net:/dev/net \
-	-v /run/flannel:/run/flannel \
-	acs-reg.alipay.com/k8s/flannel:v0.6.2-amd64 \
-	/opt/bin/flanneld \
-	--etcd-endpoints=http://127.0.0.1:2379 \
-	--ip-masq=true \
-	--iface=$(ip -o -4 addr list $(ip -o -4 route show to default | awk &#39;{print $5}&#39; | head -1) | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1)
-	
+&lt;p&gt;假设&lt;code&gt;etcd&lt;/code&gt;服务在&lt;code&gt;10.10.10.1&lt;/code&gt;, &lt;code&gt;10.10.10.2&lt;/code&gt;, &lt;code&gt;10.10.10.3&lt;/code&gt;三台机器上，
+那么&lt;code&gt;etcd-endpoints&lt;/code&gt;的值为&lt;code&gt;http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379&lt;/code&gt;.&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name=flannel \
+    --restart=always \
+    --net=host \
+    --privileged \
+    -v /dev/net:/dev/net \
+    -v /run/flannel:/run/flannel \
+    quay.io/coreos/flannel:v0.7.1-amd64 \
+    /opt/bin/flanneld \
+    --etcd-endpoints=http://10.10.10.1:2379,http://10.10.10.2:2379,http://10.10.10.3:2379 \
+    --ip-masq=true \
+    --iface=$(ip -o -4 addr list $(ip -o -4 route show to default | awk &#39;{print $5}&#39; | head -1) | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;4-修改docker-daemon的bip和mtu参数&#34;&gt;4. 修改docker daemon的bip和mtu参数&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;bip&lt;/code&gt;和&lt;code&gt;mtu&lt;/code&gt;获取方式:&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat /run/flannel/subnet.env
+ FLANNEL_NETWORK=192.168.0.0/16
+ FLANNEL_SUBNET=192.168.66.1/24
+ FLANNEL_MTU=1472
+ FLANNEL_IPMASQ=true
 
 &lt;/code&gt;&lt;/pre&gt;
 
-&lt;h3 id=&#34;restart-docker&#34;&gt;Restart Docker&lt;/h3&gt;
+&lt;p&gt;其中 &lt;code&gt;bip&lt;/code&gt;为&lt;code&gt;FLANNEL_SUBNET&lt;/code&gt;的值， &lt;code&gt;mtu&lt;/code&gt;的为&lt;code&gt;FLANNEL_MTU&lt;/code&gt;的值。&lt;/p&gt;
 
-&lt;pre&gt;&lt;code&gt;$ DOCKER_CONF=$(sudo systemctl cat docker | head -1 | awk &#39;{print $2}&#39;);source /run/flannel/subnet.env
+&lt;p&gt;将这两个参数加入到docker daemon启动配置中。以&lt;code&gt;systemctl&lt;/code&gt;系统为例，可以执行一下脚本&lt;/p&gt;
 
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt; 
+DOCKER_CONF=$(sudo systemctl cat docker | head -1 | awk &#39;{print $2}&#39;);
+
+source /run/flannel/subnet.env
+
+cp -f $DOCKER_CONF $DOCKER_CONF.backup
 
 if [[ -z $(grep -- &amp;quot;--mtu=&amp;quot; $DOCKER_CONF) ]]; then
     sed -e &amp;quot;s@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF)@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF) --mtu=${FLANNEL_MTU}@g&amp;quot; -i $DOCKER_CONF
-  fi
-  if [[ -z $(grep -- &amp;quot;--bip=&amp;quot; $DOCKER_CONF) ]]; then
+fi
+if [[ -z $(grep -- &amp;quot;--bip=&amp;quot; $DOCKER_CONF) ]]; then
     sed -e &amp;quot;s@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF)@$(grep &amp;quot;$SEARCH_FOR&amp;quot; $DOCKER_CONF) --bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
-  fi
+fi
   
-$  sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--mtu=${FLANNEL_MTU}@g;s@$(grep -o -- &amp;quot;--bip=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
+sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--mtu=${FLANNEL_MTU}@g;s@$(grep -o -- &amp;quot;--bip=[[:graph:]]*&amp;quot; $DOCKER_CONF)@--bip=${FLANNEL_SUBNET}@g&amp;quot; -i $DOCKER_CONF
 
 &lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;执行后的结果如下（注意&lt;code&gt;--bip&lt;/code&gt;和&lt;code&gt;--mtu&lt;/code&gt;）：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat /etc/systemd/system/docker.service |grep ExecStart
+ExecStart=/usr/bin/docker daemon -H fd:// --tlsverify --tlscacert /etc/docker/ca.pem --tlscert=/etc/docker/server.pem --tlskey=/etc/docker/server-key.pem --log-opt max-size=200m  --log-opt max-file=5 -H tcp://0.0.0.0:2376  --insecure-registry=acs-reg.sqa.alipay.net  --insecure-registry=alipay.docker.io  --registry-mirror=https://ant.mirror.aliyuncs.com --cluster-store= --storage-driver=overlay  --bip=192.168.66.1/24 --mtu=1472
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;5-删除docker0-重启docker-daemon&#34;&gt;5. 删除docker0，重启docker daemon&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ ip link set docker0 down
+$ ip link del docker0
+
+$ systemctl daemon-reload
+$ systemctl restart docker
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;其它节点安装方式&#34;&gt;其它节点安装方式&lt;/h3&gt;
+
+&lt;p&gt;&lt;code&gt;步骤2&lt;/code&gt; - &lt;code&gt;步骤5&lt;/code&gt;重复到其它节点上面。这样flannel网络建成了。&lt;/p&gt;
+
+&lt;h3 id=&#34;验证方式&#34;&gt;验证方式&lt;/h3&gt;
+
+&lt;p&gt;选两个节点，分别创建容器，不用指定网络类型。如：&lt;/p&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit nginx
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;从一个节点ping另一个节点的容器的IP，可以ping通。&lt;/p&gt;
+
+&lt;p&gt;从一个节点的容器内去ping另一个节点的容器IP，可以ping通。&lt;/p&gt;
+
+&lt;p&gt;这样就实现了跨节点的docker容器虚拟网络。&lt;/p&gt;
 
 &lt;h3 id=&#34;utils&#34;&gt;utils&lt;/h3&gt;
 
 &lt;p&gt;获取本地IP：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code&gt;$ ip -o -4 addr list $(ip -o -4 route show to default | awk &#39;{print $5}&#39; | head -1) | awk &#39;{print $4}&#39; | cut -d/ -f1 | head -1
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>分布式集群基础组件-Zookeeper</title>
+      <link>https://answer1991.github.io/post/zk/</link>
+      <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/post/zk/</guid>
+      <description>
+
+&lt;h3 id=&#34;单节点测试服务&#34;&gt;单节点测试服务&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-single \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意： 这里使用了&lt;code&gt;host&lt;/code&gt;网络模式，这种基础组件服务我也建议使用&lt;code&gt;host&lt;/code&gt;模式。
+同时，服务会占用&lt;code&gt;2181&lt;/code&gt;, &lt;code&gt;2888&lt;/code&gt;以及 &lt;code&gt;3888&lt;/code&gt;端口。&lt;/p&gt;
+
+&lt;h3 id=&#34;三节点生产集群&#34;&gt;三节点生产集群&lt;/h3&gt;
+
+&lt;p&gt;这里介绍没有使用&lt;code&gt;docker-compose&lt;/code&gt;方式起服务。&lt;/p&gt;
+
+&lt;p&gt;假设我们要将服务器在 &lt;code&gt;10.10.10.1&lt;/code&gt;, &lt;code&gt;10.10.10.2&lt;/code&gt;, &lt;code&gt;10.10.10.3&lt;/code&gt; 三台机器上。&lt;/p&gt;
+
+&lt;h5 id=&#34;10-10-10-1节点&#34;&gt;10.10.10.1节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-1 \
+    --net host \ 
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=1 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-2节点&#34;&gt;10.10.10.2节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-2 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=2 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-3节点&#34;&gt;10.10.10.3节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit 
+    --name zk-3 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=3 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>分布式集群基础组件-etcd</title>
+      <link>https://answer1991.github.io/post/etcd/</link>
+      <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/post/etcd/</guid>
+      <description>
+
+&lt;h3 id=&#34;单节点测试服务&#34;&gt;单节点测试服务&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name etcd-single --net host \
+    --restart=always \
+    -e ETCD_NAME=infra1 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://$(hostname -i):2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra1:/infra1.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意： 这里使用了&lt;code&gt;host&lt;/code&gt;网络模式，这种基础组件服务我也建议使用&lt;code&gt;host&lt;/code&gt;模式。
+同时，服务会占用&lt;code&gt;2379&lt;/code&gt;, &lt;code&gt;2380&lt;/code&gt;端口。&lt;/p&gt;
+
+&lt;h3 id=&#34;三节点生产集群&#34;&gt;三节点生产集群&lt;/h3&gt;
+
+&lt;p&gt;这里介绍没有使用&lt;code&gt;docker-compose&lt;/code&gt;方式起服务。&lt;/p&gt;
+
+&lt;p&gt;假设我们要将服务器在 &lt;code&gt;10.10.10.1&lt;/code&gt;, &lt;code&gt;10.10.10.2&lt;/code&gt;, &lt;code&gt;10.10.10.3&lt;/code&gt; 三台机器上。&lt;/p&gt;
+
+&lt;p&gt;那么&lt;code&gt;ETCD_INITIAL_CLUSTER&lt;/code&gt;的值为&lt;code&gt;infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380&lt;/code&gt;&lt;/p&gt;
+
+&lt;h5 id=&#34;10-10-10-1节点&#34;&gt;10.10.10.1节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name etcd-infra1 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra1 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra1:/infra1.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-2节点&#34;&gt;10.10.10.2节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name etcd-infra2 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra2 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra2:/infra2.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-3节点&#34;&gt;10.10.10.3节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit --name etcd-infra3 --net host \
+    --restart=always \
+    -e ETCD_NAME=infra3 \
+    -e ETCD_INITIAL_ADVERTISE_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_PEER_URLS=http://$(hostname -i):2380 \
+    -e ETCD_LISTEN_CLIENT_URLS=http://$(hostname -i):2379,http://127.0.0.1:2379 \
+    -e ETCD_ADVERTISE_CLIENT_URLS=http://$(hostname -i):2379 \
+    -e ETCD_INITIAL_CLUSTER_TOKEN=hello_world \
+    -e ETCD_INITIAL_CLUSTER=infra1=http://10.10.10.1:2380,infra2=http://10.10.10.2:2380,infra3=http://10.10.10.3:2380 \
+    -e ETCD_INITIAL_CLUSTER_STATE=new \
+    -e ETCD_AUTO_COMPACTION_RETENTION=1 \
+    -e ETCD_SNAPSHOT_COUNT=10000 \
+    -e ETCD_MAX_SNAPSHOTS=5 \
+    -e ETCD_MAX_WALS=5 \
+    -e ETCD_HEARTBEAT_INTERVAL=1000 \
+    -e ETCD_ELECTION_TIMEOUT=10000 \
+    -v etcd-infra3:/infra3.etcd \
+    quay.io/coreos/etcd:v3.2.0 \
+    etcd --quota-backend-bytes=8589934592
 &lt;/code&gt;&lt;/pre&gt;
 </description>
     </item>
@@ -97,33 +320,6 @@ $  sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKE
       <guid>https://answer1991.github.io/talk/example-talk/</guid>
       <description>&lt;p&gt;Embed your slides or video here using &lt;a href=&#34;https://gcushen.github.io/hugo-academic-demo/post/writing-markdown-latex/&#34; target=&#34;_blank&#34;&gt;shortcodes&lt;/a&gt;. Further details can easily be added using &lt;em&gt;Markdown&lt;/em&gt; and $\rm \LaTeX$ math code.&lt;/p&gt;
 </description>
-    </item>
-    
-    <item>
-      <title>Deep Learning</title>
-      <link>https://answer1991.github.io/project/deep-learning/</link>
-      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://answer1991.github.io/project/deep-learning/</guid>
-      <description>&lt;p&gt;Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis posuere tellus ac convallis placerat. Proin tincidunt magna sed ex sollicitudin condimentum. Sed ac faucibus dolor, scelerisque sollicitudin nisi. Cras purus urna, suscipit quis sapien eu, pulvinar tempor diam. Quisque risus orci, mollis id ante sit amet, gravida egestas nisl. Sed ac tempus magna. Proin in dui enim. Donec condimentum, sem id dapibus fringilla, tellus enim condimentum arcu, nec volutpat est felis vel metus. Vestibulum sit amet erat at nulla eleifend gravida.&lt;/p&gt;
-
-&lt;p&gt;Nullam vel molestie justo. Curabitur vitae efficitur leo. In hac habitasse platea dictumst. Sed pulvinar mauris dui, eget varius purus congue ac. Nulla euismod, lorem vel elementum dapibus, nunc justo porta mi, sed tempus est est vel tellus. Nam et enim eleifend, laoreet sem sit amet, elementum sem. Morbi ut leo congue, maximus velit ut, finibus arcu. In et libero cursus, rutrum risus non, molestie leo. Nullam congue quam et volutpat malesuada. Sed risus tortor, pulvinar et dictum nec, sodales non mi. Phasellus lacinia commodo laoreet. Nam mollis, erat in feugiat consectetur, purus eros egestas tellus, in auctor urna odio at nibh. Mauris imperdiet nisi ac magna convallis, at rhoncus ligula cursus.&lt;/p&gt;
-
-&lt;p&gt;Cras aliquam rhoncus ipsum, in hendrerit nunc mattis vitae. Duis vitae efficitur metus, ac tempus leo. Cras nec fringilla lacus. Quisque sit amet risus at ipsum pharetra commodo. Sed aliquam mauris at consequat eleifend. Praesent porta, augue sed viverra bibendum, neque ante euismod ante, in vehicula justo lorem ac eros. Suspendisse augue libero, venenatis eget tincidunt ut, malesuada at lorem. Donec vitae bibendum arcu. Aenean maximus nulla non pretium iaculis. Quisque imperdiet, nulla in pulvinar aliquet, velit quam ultrices quam, sit amet fringilla leo sem vel nunc. Mauris in lacinia lacus.&lt;/p&gt;
-
-&lt;p&gt;Suspendisse a tincidunt lacus. Curabitur at urna sagittis, dictum ante sit amet, euismod magna. Sed rutrum massa id tortor commodo, vitae elementum turpis tempus. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean purus turpis, venenatis a ullamcorper nec, tincidunt et massa. Integer posuere quam rutrum arcu vehicula imperdiet. Mauris ullamcorper quam vitae purus congue, quis euismod magna eleifend. Vestibulum semper vel augue eget tincidunt. Fusce eget justo sodales, dapibus odio eu, ultrices lorem. Duis condimentum lorem id eros commodo, in facilisis mauris scelerisque. Morbi sed auctor leo. Nullam volutpat a lacus quis pharetra. Nulla congue rutrum magna a ornare.&lt;/p&gt;
-
-&lt;p&gt;Aliquam in turpis accumsan, malesuada nibh ut, hendrerit justo. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Quisque sed erat nec justo posuere suscipit. Donec ut efficitur arcu, in malesuada neque. Nunc dignissim nisl massa, id vulputate nunc pretium nec. Quisque eget urna in risus suscipit ultricies. Pellentesque odio odio, tincidunt in eleifend sed, posuere a diam. Nam gravida nisl convallis semper elementum. Morbi vitae felis faucibus, vulputate orci placerat, aliquet nisi. Aliquam erat volutpat. Maecenas sagittis pulvinar purus, sed porta quam laoreet at.&lt;/p&gt;
-</description>
-    </item>
-    
-    <item>
-      <title>External Project</title>
-      <link>https://answer1991.github.io/project/example-external-project/</link>
-      <pubDate>Wed, 27 Apr 2016 00:00:00 +0000</pubDate>
-      
-      <guid>https://answer1991.github.io/project/example-external-project/</guid>
-      <description></description>
     </item>
     
     <item>

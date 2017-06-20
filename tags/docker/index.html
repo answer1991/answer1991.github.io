@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en-us">
+<html lang="zh-cn">
 <head>
 
   <meta charset="utf-8">
@@ -50,7 +50,7 @@
     <div class="navbar-header">
       <button type="button" class="navbar-toggle collapsed" data-toggle="collapse"
               data-target=".navbar-collapse" aria-expanded="false">
-        <span class="sr-only">Toggle navigation</span>
+        <span class="sr-only">切换导航</span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
@@ -133,10 +133,28 @@
   
   
   <div>
-    <h2><a href="https://answer1991.github.io/post/flannel/">Use Flannel Network</a></h2>
+    <h2><a href="https://answer1991.github.io/post/flannel/">使用flannel创建跨节点的docker容器网络</a></h2>
     <div class="article-style">
       
-      Create a beautifully simple personal or academic website in under 10 minutes.
+      在多节点的docker集群环境下，docker自带的网络不能满足跨节点的容器互通问题。本文介绍使用<code>flannel</code>来搭建跨节点的虚拟docker容器网络。
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="https://answer1991.github.io/post/zk/">分布式集群基础组件-Zookeeper</a></h2>
+    <div class="article-style">
+      
+      Zookeeper是Apache提供的分布式配置中心服务。本文介绍如何用Docker容器方式启动Zookeeper。
+      
+    </div>
+  </div>
+  
+  <div>
+    <h2><a href="https://answer1991.github.io/post/etcd/">分布式集群基础组件-etcd</a></h2>
+    <div class="article-style">
+      
+      etcd使用广泛的的分布式配置中心服务，最常见的被用于k8s。本文介绍如何用Docker容器方式启动etcd。
       
     </div>
   </div>
@@ -150,7 +168,7 @@
   <div class="container">
     <p class="powered-by">
 
-      &copy; 2016 answer1991 &middot; 
+      &copy; 2017 answer1991 &middot; 
 
       Powered by the <a href="https://github.com/gcushen/hugo-academic" target="_blank">Academic
       theme</a> for <a href="http://gohugo.io" target="_blank">Hugo</a>.

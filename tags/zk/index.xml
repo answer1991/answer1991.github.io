@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Zk on answer1991</title>
+    <link>https://answer1991.github.io/tags/zk/</link>
+    <description>Recent content in Zk on answer1991</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>zh-cn</language>
+    <copyright>&amp;copy; 2017 answer1991</copyright>
+    <lastBuildDate>Tue, 13 Jun 2017 19:21:00 +0000</lastBuildDate>
+    <atom:link href="/tags/zk/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>分布式集群基础组件-Zookeeper</title>
+      <link>https://answer1991.github.io/post/zk/</link>
+      <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/post/zk/</guid>
+      <description>
+
+&lt;h3 id=&#34;单节点测试服务&#34;&gt;单节点测试服务&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-single \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;p&gt;注意： 这里使用了&lt;code&gt;host&lt;/code&gt;网络模式，这种基础组件服务我也建议使用&lt;code&gt;host&lt;/code&gt;模式。
+同时，服务会占用&lt;code&gt;2181&lt;/code&gt;, &lt;code&gt;2888&lt;/code&gt;以及 &lt;code&gt;3888&lt;/code&gt;端口。&lt;/p&gt;
+
+&lt;h3 id=&#34;三节点生产集群&#34;&gt;三节点生产集群&lt;/h3&gt;
+
+&lt;p&gt;这里介绍没有使用&lt;code&gt;docker-compose&lt;/code&gt;方式起服务。&lt;/p&gt;
+
+&lt;p&gt;假设我们要将服务器在 &lt;code&gt;10.10.10.1&lt;/code&gt;, &lt;code&gt;10.10.10.2&lt;/code&gt;, &lt;code&gt;10.10.10.3&lt;/code&gt; 三台机器上。&lt;/p&gt;
+
+&lt;h5 id=&#34;10-10-10-1节点&#34;&gt;10.10.10.1节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-1 \
+    --net host \ 
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=1 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-2节点&#34;&gt;10.10.10.2节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit \
+    --name zk-2 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=2 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;10-10-10-3节点&#34;&gt;10.10.10.3节点&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run -dit 
+    --name zk-3 \
+    --net host \
+    --restart always \
+    -v zk-data:/data \
+    -v zk-log:/datalog \
+    -e ZOO_MY_ID=3 \
+    -e &amp;quot;ZOO_SERVERS=server.1=10.10.10.1:2888:3888 server.2=10.10.10.2:2888:3888 server.3=10.10.10.3:2888:3888&amp;quot; \
+    zookeeper:3.4.10
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+  </channel>
+</rss>
