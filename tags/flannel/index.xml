@@ -92,7 +92,7 @@ sed -e &amp;quot;s@$(grep -o -- &amp;quot;--mtu=[[:graph:]]*&amp;quot; $DOCKER_C
 &lt;p&gt;执行后的结果如下（注意&lt;code&gt;--bip&lt;/code&gt;和&lt;code&gt;--mtu&lt;/code&gt;）：&lt;/p&gt;
 
 &lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ cat /etc/systemd/system/docker.service |grep ExecStart
-ExecStart=/usr/bin/docker daemon -H fd:// --tlsverify --tlscacert /etc/docker/ca.pem --tlscert=/etc/docker/server.pem --tlskey=/etc/docker/server-key.pem --log-opt max-size=200m  --log-opt max-file=5 -H tcp://0.0.0.0:2376  --insecure-registry=acs-reg.sqa.alipay.net  --insecure-registry=alipay.docker.io  --registry-mirror=https://ant.mirror.aliyuncs.com --cluster-store= --storage-driver=overlay  --bip=192.168.66.1/24 --mtu=1472
+ExecStart=/usr/bin/docker daemon -H fd:// --tlsverify --tlscacert /etc/docker/ca.pem --tlscert=/etc/docker/server.pem --tlskey=/etc/docker/server-key.pem --log-opt max-size=200m  --log-opt max-file=5 -H tcp://0.0.0.0:2376   --cluster-store= --storage-driver=overlay  --bip=192.168.66.1/24 --mtu=1472
 &lt;/code&gt;&lt;/pre&gt;
 
 &lt;h3 id=&#34;5-删除docker0-重启docker-daemon&#34;&gt;5. 删除docker0，重启docker daemon&lt;/h3&gt;

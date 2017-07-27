@@ -28,17 +28,17 @@
   <link rel="stylesheet" href="/css/hugo-academic.css">
   
 
-  <link rel="alternate" href="https://answer1991.github.io/tags/discovery/index.xml" type="application/rss+xml" title="answer1991">
-  <link rel="feed" href="https://answer1991.github.io/tags/discovery/index.xml" type="application/rss+xml" title="answer1991">
+  <link rel="alternate" href="https://answer1991.github.io/index.xml" type="application/rss+xml" title="answer1991">
+  <link rel="feed" href="https://answer1991.github.io/index.xml" type="application/rss+xml" title="answer1991">
 
   <link rel="icon" type="image/png" href="/img/icon2.png">
   <link rel="apple-touch-icon" type="image/png" href="/img/apple-touch-icon.png">
 
-  <link rel="canonical" href="https://answer1991.github.io/tags/discovery/">
+  <link rel="canonical" href="https://answer1991.github.io/post/docker_clean/">
 
   
 
-  <title>Discovery | answer1991</title>
+  <title>Docker清理命令 | answer1991</title>
 
 </head>
 <body id="top" data-spy="scroll" data-target="#navbar-main" data-offset="71">
@@ -121,59 +121,139 @@
 </nav>
 
 
+<article class="article" itemscope itemtype="http://schema.org/Article">
+
+  
 
 
+  <div class="article-container">
+    <h1 itemprop="name">Docker清理命令</h1>
+    
 
-<div class="universal-wrapper">
+<div class="article-metadata">
 
-  <h1>Discovery</h1>
+  <span class="article-date">
+    <time datetime="2017-06-23 19:21:00 &#43;0000 UTC" itemprop="datePublished">
+      2017-06-23
+    </time>
+  </span>
 
+  
+
+  
+  
+  
+  <span class="article-tags">
+    <i class="fa fa-tags"></i>
+    
+    <a href="/tags/consul">consul</a
+    >, 
+    
+    <a href="/tags/discovery">discovery</a
+    >, 
+    
+    <a href="/tags/docker">docker</a
+    >
+    
+  </span>
+  
   
 
   
   
-  <div>
-    <h2><a href="https://answer1991.github.io/post/docker_clean/">Docker清理命令</a></h2>
-    <div class="article-style">
-      
-      Docker常用清理命令
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="https://answer1991.github.io/post/consul/">分布式集群基础组件-Consul</a></h2>
-    <div class="article-style">
-      
-      Consul和ZooKeeper、etcd一样提供了分布式、强一致性的KV存储服务。相比于ZooKeeper、etcd，Consul将服务发现、健康监测、多机房等提到了自身服务层面，不需要做额外开发。
-在使用多了之后，我更加喜欢使用Consul作为分布式KV存储和服务发现。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="https://answer1991.github.io/post/zk/">分布式集群基础组件-Zookeeper</a></h2>
-    <div class="article-style">
-      
-      Zookeeper是Apache提供的分布式配置中心服务。本文介绍如何用Docker容器方式启动Zookeeper。
-      
-    </div>
-  </div>
-  
-  <div>
-    <h2><a href="https://answer1991.github.io/post/etcd/">分布式集群基础组件-etcd</a></h2>
-    <div class="article-style">
-      
-      etcd使用广泛的的分布式配置中心服务，最常见的被用于k8s。本文介绍如何用Docker容器方式启动etcd。
-      
-    </div>
-  </div>
-  
+<div class="share-box" aria-hidden="true">
+  <ul class="share">
+    <li>
+      <a class="facebook"
+         href="https://www.facebook.com/sharer.php?u=https%3a%2f%2fanswer1991.github.io%2fpost%2fdocker_clean%2f"
+         target="_blank">
+        <i class="fa fa-facebook"></i>
+      </a>
+    </li>
+    <li>
+      <a class="twitter"
+         href="https://twitter.com/intent/tweet?text=Docker%e6%b8%85%e7%90%86%e5%91%bd%e4%bb%a4&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fdocker_clean%2f"
+         target="_blank">
+        <i class="fa fa-twitter"></i>
+      </a>
+    </li>
+    <li>
+      <a class="linkedin"
+         href="https://www.linkedin.com/shareArticle?mini=true&amp;url=https%3a%2f%2fanswer1991.github.io%2fpost%2fdocker_clean%2f&amp;title=Docker%e6%b8%85%e7%90%86%e5%91%bd%e4%bb%a4"
+         target="_blank">
+        <i class="fa fa-linkedin"></i>
+      </a>
+    </li>
+    <li>
+      <a class="weibo"
+         href="http://service.weibo.com/share/share.php?url=https%3a%2f%2fanswer1991.github.io%2fpost%2fdocker_clean%2f&amp;title=Docker%e6%b8%85%e7%90%86%e5%91%bd%e4%bb%a4"
+         target="_blank">
+        <i class="fa fa-weibo"></i>
+      </a>
+    </li>
+    <li>
+      <a class="email"
+         href="mailto:?subject=Docker%e6%b8%85%e7%90%86%e5%91%bd%e4%bb%a4&amp;body=https%3a%2f%2fanswer1991.github.io%2fpost%2fdocker_clean%2f">
+        <i class="fa fa-envelope"></i>
+      </a>
+    </li>
+  </ul>
+</div>
+
 
   
-
 
 </div>
+
+    <div class="article-style" itemprop="articleBody">
+      
+
+<p>引用自： <a href="https://www.calazan.com/docker-cleanup-commands/" target="_blank">https://www.calazan.com/docker-cleanup-commands/</a></p>
+
+<h4 id="kill-all-running-containers">Kill all running containers</h4>
+
+<pre><code class="language-bash">docker stop $(docker ps -q)
+</code></pre>
+
+<h4 id="delete-all-stopped-containers-including-data-only-containers">Delete all stopped containers (including data-only containers)</h4>
+
+<pre><code class="language-bash">docker rm $(docker ps -a -q)
+</code></pre>
+
+<h4 id="delete-all-untagged-dangling-none-images">Delete all &lsquo;untagged/dangling&rsquo; (<none>) images</h4>
+
+<pre><code class="language-bash">docker rmi $(docker images -q -f dangling=true)
+</code></pre>
+
+<h4 id="delete-all-images">Delete ALL images</h4>
+
+<pre><code class="language-bash">docker rmi $(docker images -q)
+</code></pre>
+
+    </div>
+  </div>
+
+</article>
+
+<div class="container">
+  <nav>
+  <ul class="pager">
+    
+    <li class="previous"><a href="https://answer1991.github.io/post/consul/"><span
+      aria-hidden="true">&larr;</span> 分布式集群基础组件-Consul</a></li>
+    
+
+    
+  </ul>
+</nav>
+
+</div>
+
+<div class="article-container">
+  
+
+</div>
+
 <footer class="site-footer">
   <div class="container">
     <p class="powered-by">
@@ -227,6 +307,11 @@
     
 
     
+    
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ['\\(','\\)']] } });
+    </script>
+    <script async src="//cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML"></script>
     
 
   </body>

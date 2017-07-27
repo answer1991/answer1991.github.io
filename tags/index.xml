@@ -21,9 +21,18 @@
     </item>
     
     <item>
+      <title>Consul</title>
+      <link>https://answer1991.github.io/tags/consul/</link>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/tags/consul/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Discovery</title>
       <link>https://answer1991.github.io/tags/discovery/</link>
-      <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/tags/discovery/</guid>
       <description></description>
@@ -32,7 +41,7 @@
     <item>
       <title>Docker</title>
       <link>https://answer1991.github.io/tags/docker/</link>
-      <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/tags/docker/</guid>
       <description></description>

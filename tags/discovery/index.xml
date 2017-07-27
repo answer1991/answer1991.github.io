@@ -7,8 +7,106 @@
     <generator>Hugo -- gohugo.io</generator>
     <language>zh-cn</language>
     <copyright>&amp;copy; 2017 answer1991</copyright>
-    <lastBuildDate>Tue, 13 Jun 2017 19:21:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 23 Jun 2017 19:21:00 +0000</lastBuildDate>
     <atom:link href="/tags/discovery/" rel="self" type="application/rss+xml" />
+    
+    <item>
+      <title>Docker清理命令</title>
+      <link>https://answer1991.github.io/post/docker_clean/</link>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/post/docker_clean/</guid>
+      <description>
+
+&lt;p&gt;引用自： &lt;a href=&#34;https://www.calazan.com/docker-cleanup-commands/&#34; target=&#34;_blank&#34;&gt;https://www.calazan.com/docker-cleanup-commands/&lt;/a&gt;&lt;/p&gt;
+
+&lt;h4 id=&#34;kill-all-running-containers&#34;&gt;Kill all running containers&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;docker stop $(docker ps -q)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;delete-all-stopped-containers-including-data-only-containers&#34;&gt;Delete all stopped containers (including data-only containers)&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;docker rm $(docker ps -a -q)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;delete-all-untagged-dangling-none-images&#34;&gt;Delete all &amp;lsquo;untagged/dangling&amp;rsquo; (&lt;none&gt;) images&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;docker rmi $(docker images -q -f dangling=true)
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h4 id=&#34;delete-all-images&#34;&gt;Delete ALL images&lt;/h4&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;docker rmi $(docker images -q)
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
+    
+    <item>
+      <title>分布式集群基础组件-Consul</title>
+      <link>https://answer1991.github.io/post/consul/</link>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/post/consul/</guid>
+      <description>
+
+&lt;h3 id=&#34;server&#34;&gt;Server&lt;/h3&gt;
+
+&lt;h5 id=&#34;bootstrap-node&#34;&gt;Bootstrap Node&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run --net=host -dit --name=consul-server-bootstrap \
+    -e &#39;CONSUL_LOCAL_CONFIG={&amp;quot;skip_leave_on_interrupt&amp;quot;: true}&#39; \
+    -v consul-config:/consul/config \
+    -v consul-data:/consul/data \
+    consul:0.8.4 \
+    agent -server \
+    -client=0.0.0.0 \
+    -bind $(hostname -i) \
+    -bootstrap \
+    -ui \
+    -domain=consul \
+    -datacenter=primary
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h5 id=&#34;other-node&#34;&gt;Other Node&lt;/h5&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run --net=host -dit --name=consul-server \
+    -e &#39;CONSUL_LOCAL_CONFIG={&amp;quot;skip_leave_on_interrupt&amp;quot;: true}&#39; \
+    -v consul-config:/consul/config \
+    -v consul-data:/consul/data \
+    consul:0.8.4 \
+    agent -server \
+    -client=0.0.0.0 \
+    -bind=$(hostname -i) \
+    -retry-join=bootstrapNode \
+    -ui \
+    -domain=consul \
+    -datacenter=primary
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;client&#34;&gt;Client&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ docker run --net=host -dit --name=consul-client \
+    -e &#39;CONSUL_LOCAL_CONFIG={&amp;quot;skip_leave_on_interrupt&amp;quot;: true}&#39; \
+    -v consul-config:/consul/config \
+    -v consul-data:/consul/data \
+    consul:0.8.4 \
+    agent \
+    -client=0.0.0.0 \
+    -bind=$(hostname -i) \
+    -retry-join=ServerNodes \
+    -domain=consul
+&lt;/code&gt;&lt;/pre&gt;
+
+&lt;h3 id=&#34;dnsmasq&#34;&gt;DNSMASQ&lt;/h3&gt;
+
+&lt;pre&gt;&lt;code class=&#34;language-bash&#34;&gt;$ sudo docker run -dit --net=host --name=dnsmasq \
+    --cap-add=NET_ADMIN \
+    andyshinn/dnsmasq:2.75 \
+    -S /consul/127.0.0.1#8600
+&lt;/code&gt;&lt;/pre&gt;
+</description>
+    </item>
     
     <item>
       <title>分布式集群基础组件-Zookeeper</title>

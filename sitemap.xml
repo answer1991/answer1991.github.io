@@ -5,6 +5,24 @@
     
     <url>
     
+      <loc>https://answer1991.github.io/post/docker_clean/</loc>
+      <lastmod>2017-06-23T19:21:00+00:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
+      <loc>https://answer1991.github.io/post/consul/</loc>
+      <lastmod>2017-06-23T19:21:00+00:00</lastmod>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>https://answer1991.github.io/post/flannel/</loc>
       <lastmod>2017-06-13T19:21:00+00:00</lastmod>
     </url>
@@ -124,8 +142,18 @@
     
     <url>
     
+      <loc>https://answer1991.github.io/tags/consul/</loc>
+      <lastmod>2017-06-23T19:21:00+00:00</lastmod>
+      <priority>0</priority>
+    </url>
+    
+  
+    
+    
+    <url>
+    
       <loc>https://answer1991.github.io/tags/discovery/</loc>
-      <lastmod>2017-06-13T19:21:00+00:00</lastmod>
+      <lastmod>2017-06-23T19:21:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
@@ -135,7 +163,7 @@
     <url>
     
       <loc>https://answer1991.github.io/tags/docker/</loc>
-      <lastmod>2017-06-13T19:21:00+00:00</lastmod>
+      <lastmod>2017-06-23T19:21:00+00:00</lastmod>
       <priority>0</priority>
     </url>
     
