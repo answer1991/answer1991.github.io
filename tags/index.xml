@@ -21,9 +21,18 @@
     </item>
     
     <item>
+      <title>Bash</title>
+      <link>https://answer1991.github.io/tags/bash/</link>
+      <pubDate>Thu, 27 Jul 2017 14:18:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/tags/bash/</guid>
+      <description></description>
+    </item>
+    
+    <item>
       <title>Consul</title>
       <link>https://answer1991.github.io/tags/consul/</link>
-      <pubDate>Thu, 27 Jul 2017 14:18:00 +0000</pubDate>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/tags/consul/</guid>
       <description></description>
@@ -32,7 +41,7 @@
     <item>
       <title>Discovery</title>
       <link>https://answer1991.github.io/tags/discovery/</link>
-      <pubDate>Thu, 27 Jul 2017 14:18:00 +0000</pubDate>
+      <pubDate>Fri, 23 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/tags/discovery/</guid>
       <description></description>
@@ -71,6 +80,15 @@
       <pubDate>Tue, 13 Jun 2017 19:21:00 +0000</pubDate>
       
       <guid>https://answer1991.github.io/tags/network/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Ops</title>
+      <link>https://answer1991.github.io/tags/ops/</link>
+      <pubDate>Thu, 27 Jul 2017 14:18:00 +0000</pubDate>
+      
+      <guid>https://answer1991.github.io/tags/ops/</guid>
       <description></description>
     </item>
     
